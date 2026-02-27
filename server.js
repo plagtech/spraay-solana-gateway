@@ -173,12 +173,22 @@ app.get('/', (req, res) => {
   });
 });
 
+// ── Global error handlers ──
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection:', err.message || err);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err.message || err);
+});
+
 // ── Start ──
-app.listen(config.PORT, () => {
+const PORT = process.env.PORT || config.PORT;
+app.listen(PORT, () => {
   console.log(`\n💧 Spraay Solana Gateway v1.0.0`);
   console.log(`   Network:     ${config.NETWORK} (${config.X402_NETWORK})`);
   console.log(`   Treasury:    ${config.TREASURY_WALLET}`);
   console.log(`   Facilitator: ${config.FACILITATOR_URL}`);
-  console.log(`   Port:        ${config.PORT}`);
+  console.log(`   Port:        ${PORT}`);
   console.log(`   Ready!\n`);
 });
