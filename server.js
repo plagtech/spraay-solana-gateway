@@ -82,7 +82,7 @@ const routes = {
 };
 
 // Apply x402 middleware — protects all routes defined above
-app.use(paymentMiddleware(routes, resourceServer));
+app.use(paymentMiddleware(routes, resourceServer, undefined, undefined, false));
 
 // ── Protected Routes (require x402 payment) ──
 app.use('/solana/batch-send-sol', batchSendSOLRouter);
