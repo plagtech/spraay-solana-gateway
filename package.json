@@ -1,0 +1,32 @@
+{
+  "name": "spraay-solana-gateway",
+  "version": "1.0.0",
+  "description": "Spraay x402 payment gateway for AI agents on Solana — batch send SOL & SPL tokens",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "spraay",
+    "x402",
+    "solana",
+    "batch-payments",
+    "ai-agents",
+    "svm"
+  ],
+  "author": "Spraay",
+  "license": "MIT",
+  "dependencies": {
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "@x402/core": "^2.5.0",
+    "@x402/express": "^2.5.0",
+    "@x402/svm": "^2.5.0",
+    "bs58": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1"
+  }
+}
