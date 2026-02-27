@@ -1,0 +1,15 @@
+name: spraay-solana-gateway
+description: "Batch send SOL and SPL tokens to 1000+ wallets via x402 payments on Solana. AI agents pay $0.01 USDC per request."
+icon: 💧
+tags:
+  - solana
+  - payments
+  - batch-transfer
+  - x402
+  - defi
+  - airdrop
+startCommand:
+  type: stdio
+  command: node
+  args:
+    - mcp/spraay-solana-mcp.js
