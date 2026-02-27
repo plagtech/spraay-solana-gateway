@@ -8,6 +8,7 @@
 // Powered by: @x402/express + @x402/svm (Coinbase x402 protocol)
 // ═══════════════════════════════════════════════════════════════
 
+import { setupMcpRoutes } from './mcp/mcpStreamable.js';
 import express from 'express';
 import cors from 'cors';
 import { paymentMiddleware, x402ResourceServer } from '@x402/express';
@@ -181,6 +182,9 @@ process.on('unhandledRejection', (err) => {
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err.message || err);
 });
+
+// —— MCP Streamable HTTP (for Smithery/Claude Desktop) ——
+setupMcpRoutes(app);
 
 // ── Start ──
 const PORT = process.env.PORT || config.PORT;

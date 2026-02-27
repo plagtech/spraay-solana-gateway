@@ -19,6 +19,7 @@
   "author": "Spraay",
   "license": "MIT",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "@x402/core": "^2.5.0",
@@ -27,6 +28,7 @@
     "bs58": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "zod": "^3.25.76"
   }
 }
