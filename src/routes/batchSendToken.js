@@ -9,7 +9,13 @@ router.post('/', async (req, res) => {
   logRequest(req, `batch-send-token — mint: ${req.body?.mint} — ${req.body?.recipients?.length || 0} recipients`);
 
   try {
-    const { mint, recipients } = req.body;
+    const { mint, recipients, sender } = req.body;
+
+    if (!sender) {
+      return res.status(400).json({
+        error: 'sender (payer public key) is required for non-custodial batch',
+      });
+    }
 
     const mintValidation = validateMint(mint);
     if (!mintValidation.valid) {
@@ -21,9 +27,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: recipientValidation.error });
     }
 
-    const result = await batchSendToken(mint, recipients);
+    const result = await batchSendToken(mint, recipients, sender);
     res.json(result);
-
   } catch (err) {
     console.error('batch-send-token error:', err);
     res.status(500).json({

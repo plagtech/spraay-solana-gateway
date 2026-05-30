@@ -9,16 +9,21 @@ router.post('/', async (req, res) => {
   logRequest(req, `batch-send-sol — ${req.body?.recipients?.length || 0} recipients`);
 
   try {
-    const { recipients } = req.body;
+    const { recipients, sender } = req.body;
+
+    if (!sender) {
+      return res.status(400).json({
+        error: 'sender (payer public key) is required for non-custodial batch',
+      });
+    }
 
     const validation = validateRecipients(recipients);
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error });
     }
 
-    const result = await batchSendSOL(recipients);
+    const result = await batchSendSOL(recipients, sender);
     res.json(result);
-
   } catch (err) {
     console.error('batch-send-sol error:', err);
     res.status(500).json({
