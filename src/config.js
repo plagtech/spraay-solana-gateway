@@ -16,8 +16,7 @@ const config = {
 
   // Treasury
   TREASURY_WALLET: process.env.TREASURY_WALLET,
-  TREASURY_PRIVATE_KEY: process.env.TREASURY_PRIVATE_KEY,
-
+  
   // Token mints
   USDC_MINT: NETWORK === 'mainnet-beta'
     ? (process.env.USDC_MINT_MAINNET || 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
