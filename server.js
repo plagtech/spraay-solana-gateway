@@ -15,6 +15,7 @@ import { paymentMiddleware, x402ResourceServer } from '@x402/express';
 import { ExactSvmScheme } from '@x402/svm/exact/server';
 import { HTTPFacilitatorClient } from '@x402/core/server';
 import config from './src/config.js';
+import { gatewayEvents } from './src/middleware/gatewayEvents.js';
 
 // Route handlers
 import healthRouter from './src/routes/health.js';
@@ -26,6 +27,7 @@ import statusRouter from './src/routes/status.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(gatewayEvents);   // ← logs scan / intent / payment to gateway_events
 
 // ── Health check (free, no x402) ──
 app.use('/health', healthRouter);
