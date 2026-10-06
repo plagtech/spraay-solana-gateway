@@ -127,6 +127,49 @@ function createMcpServer() {
 // Session management
 const transports = {};
 
+// ── Idle-session sweep ──
+// Sessions were only ever freed by an explicit DELETE /mcp. Scanners and
+// registries initialize and walk away, so every abandoned session (transport +
+// McpServer, ~65 KB) stayed in memory forever. Track last activity and close
+// sessions that have been idle past the TTL. Sessions with an open SSE stream
+// are never swept.
+const SESSION_TTL_MS = Number(process.env.MCP_SESSION_TTL_MS) || 30 * 60 * 1000;
+const SWEEP_INTERVAL_MS = Number(process.env.MCP_SWEEP_INTERVAL_MS) || 5 * 60 * 1000;
+const lastSeen = {};
+const openStreams = {};
+
+function touch(sessionId) {
+  if (sessionId) lastSeen[sessionId] = Date.now();
+}
+
+function forget(sessionId) {
+  delete transports[sessionId];
+  delete lastSeen[sessionId];
+  delete openStreams[sessionId];
+}
+
+async function sweepIdleSessions() {
+  const cutoff = Date.now() - SESSION_TTL_MS;
+  let closed = 0;
+  for (const sid of Object.keys(transports)) {
+    if ((openStreams[sid] || 0) > 0) continue;
+    if ((lastSeen[sid] ?? 0) > cutoff) continue;
+    const transport = transports[sid];
+    forget(sid);
+    try {
+      await transport.close();
+    } catch (err) {
+      console.error('MCP sweep close error:', err?.message || err);
+    }
+    closed++;
+  }
+  if (closed > 0) {
+    console.log(`[mcp] swept ${closed} idle session(s); ${Object.keys(transports).length} active`);
+  }
+}
+
+setInterval(sweepIdleSessions, SWEEP_INTERVAL_MS).unref();
+
 export function setupMcpRoutes(app) {
   // POST /mcp — main MCP protocol endpoint
   app.post('/mcp', async (req, res) => {
@@ -149,7 +192,7 @@ export function setupMcpRoutes(app) {
         // Clean up on close
         transport.onclose = () => {
           const sid = transport.sessionId;
-          if (sid) delete transports[sid];
+          if (sid) forget(sid);
         };
       } else {
         res.status(400).json({
@@ -166,6 +209,7 @@ export function setupMcpRoutes(app) {
       if (transport.sessionId && !transports[transport.sessionId]) {
         transports[transport.sessionId] = transport;
       }
+      touch(transport.sessionId);
     } catch (err) {
       console.error('MCP POST error:', err);
       if (!res.headersSent) {
@@ -189,6 +233,12 @@ export function setupMcpRoutes(app) {
       });
       return;
     }
+    touch(sessionId);
+    openStreams[sessionId] = (openStreams[sessionId] || 0) + 1;
+    res.on('close', () => {
+      if (openStreams[sessionId] > 0) openStreams[sessionId]--;
+      touch(sessionId);
+    });
     await transports[sessionId].handleRequest(req, res);
   });
 
@@ -198,7 +248,7 @@ export function setupMcpRoutes(app) {
     if (sessionId && transports[sessionId]) {
       const transport = transports[sessionId];
       await transport.handleRequest(req, res);
-      delete transports[sessionId];
+      forget(sessionId);
     } else {
       res.status(400).json({
         jsonrpc: '2.0',
